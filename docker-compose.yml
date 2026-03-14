@@ -1,0 +1,63 @@
+version: '3.8'
+
+# ============================================================
+# UserActionAnalyzePlatform - Docker Compose 一键部署
+#
+# 服务说明：
+#   mysql      - MySQL 5.7，自动建库建表并插入测试任务
+#   spark-app  - Spark Local[3] 模式运行用户 session 分析作业
+#
+# 快速启动：
+#   1. mvn clean package -DskipTests
+#   2. docker-compose up --build
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # MySQL 5.7 - 结果存储 & 任务管理
+  # ----------------------------------------------------------
+  mysql:
+    image: mysql:5.7
+    container_name: useranalyze-mysql
+    restart: on-failure
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: BigDataPlatm
+      MYSQL_ROOT_HOST: '%'
+    volumes:
+      - ./deploy/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"          # 暴露端口，方便本地 MySQL 客户端连接查看结果
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ----------------------------------------------------------
+  # Spark App - Local[3] 模式运行用户行为分析作业
+  # ----------------------------------------------------------
+  spark-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: useranalyze-spark
+    restart: "no"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # 增大 Spark local 模式可用内存（可按机器配置调整）
+      JAVA_TOOL_OPTIONS: "-Xmx2g -Xms512m"
+    # 传入 task_id=1（与 init.sql 中插入的测试任务对应）
+    command: ["1"]
+    # 将容器日志输出到宿主机 logs/ 目录
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  mysql-data:
+    name: useranalyze-mysql-data
