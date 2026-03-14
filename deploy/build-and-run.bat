@@ -20,39 +20,17 @@ if errorlevel 1 (
 )
 echo        Docker OK.
 
-:: ---------- Check Maven ----------
-echo.
-echo [Check] Maven available?
-where mvn >nul 2>&1
-if errorlevel 1 (
-    echo [ERROR] mvn not found. Install Maven and add its bin\ to PATH.
-    echo         Download: https://maven.apache.org/download.cgi
-    pause
-    exit /b 1
-)
-echo        Maven OK.
-
-:: ---------- Maven build ----------
-echo.
-echo [1/3] Building JAR (first run downloads dependencies, may take a few minutes)...
-cmd /c mvn clean package -DskipTests
-if errorlevel 1 (
-    echo [ERROR] Maven build failed. Check JAVA_HOME is set correctly.
-    pause
-    exit /b 1
-)
-echo        Build OK: target\UserActionAnalyzePlatform-1.0-SNAPSHOT-jar-with-dependencies.jar
-
 :: ---------- Prepare log dir ----------
 if not exist logs mkdir logs
 
 :: ---------- Stop old containers ----------
 echo.
-echo [2/3] Stopping old containers...
+echo [1/3] Stopping old containers...
 docker-compose down --remove-orphans 2>nul
 
 :: ---------- Start MySQL ----------
-echo        Starting MySQL (first run pulls image, may take a few minutes)...
+echo.
+echo [2/3] Starting MySQL (first run pulls image, may take a few minutes)...
 docker-compose up --build -d mysql
 if errorlevel 1 (
     echo [ERROR] MySQL container failed to start.
@@ -70,17 +48,16 @@ if not "!STATUS!"=="healthy" (
 )
 echo        MySQL is ready!
 
-:: ---------- Run Spark job ----------
+:: ---------- Run Spark job (Docker builds JAR inside container) ----------
 echo.
-echo        Running Spark user-session analysis job...
+echo [3/3] Building image and running Spark job (first run compiles + downloads, may take a few minutes)...
 docker-compose up --build spark-app
 
 :: ---------- Show results ----------
 echo.
-echo [3/3] Query results from MySQL:
+echo [Done] Query results from MySQL:
 docker-compose exec mysql mysql -uroot -proot BigDataPlatm -e "SELECT * FROM session_aggr_stat;" 2>nul
 
-:show_info
 echo.
 echo ==============================================
 echo  MySQL connection info (Navicat / DBeaver):
