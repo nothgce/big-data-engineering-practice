@@ -25,7 +25,19 @@ docker version    # 应输出 Client/Server 信息
 
 ---
 
-## 二、一键部署（推荐）
+## 二、首次克隆后的准备
+
+克隆仓库后，需要先复制配置文件：
+
+```bash
+cp src/main/resources/conf.properties.template src/main/resources/conf.properties
+```
+
+> Docker 部署无需修改任何内容，默认配置即可直接使用。
+
+---
+
+## 三、一键部署（推荐）
 
 项目提供了自动化部署脚本，执行以下步骤即可完成所有操作：
 
