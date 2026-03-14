@@ -35,3 +35,4 @@ dependency-reduced-pom.xml
 
 # Logs
 logs/
+src/main/resources/conf.properties

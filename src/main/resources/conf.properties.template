@@ -3,6 +3,6 @@ jdbc.driver=com.mysql.jdbc.Driver
 # 本地直接运行时改为 localhost 或具体 IP
 jdbc.url=jdbc:mysql://mysql:3306/BigDataPlatm?useUnicode=true&characterEncoding=UTF-8
 jdbc.username=root
-jdbc.password=root
+jdbc.password=YOUR_PASSWORD
 jdbc.active=20
 spark.local=true

@@ -40,7 +40,7 @@ public class MockData {
 		String[] actions = new String[]{"search", "click", "order", "pay"};
 		Random random = new Random();
 		
-		for(int i = 0; i < 10000; i++) {
+		for(int i = 0; i < 100; i++) {
 			long userid = random.nextInt(100);    
 			
 			for(int j = 0; j < 10; j++) {
